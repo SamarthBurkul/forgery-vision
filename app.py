@@ -57,7 +57,7 @@ try:
     import certifi
     ca = certifi.where()
     
-    uri = MONGO_URI or "mongodb+srv://samarthburkul67_db_user:N4J8vQiYjHcGFsuT@cluster0.rld51zf.mongodb.net/forensicai?retryWrites=true&w=majority&appName=Cluster0"
+    uri = MONGO_URI
     _mongo_client = MongoClient(uri, serverSelectionTimeoutMS=5000, tlsCAFile=ca)
     _mongo_client.server_info()  # force connection check
     _db = _mongo_client["forensicai"]
@@ -282,7 +282,7 @@ def history():
         import os
         
         ca = certifi.where()
-        uri = os.environ.get("MONGO_URI") or "mongodb+srv://samarthburkul67_db_user:N4J8vQiYjHcGFsuT@cluster0.rld51zf.mongodb.net/forensicai?retryWrites=true&w=majority&appName=Cluster0"
+        uri = os.environ.get("MONGO_URI")
         
         # Connect strictly to return the error if it fails
         client = MongoClient(uri, serverSelectionTimeoutMS=5000, tlsCAFile=ca)
@@ -309,7 +309,7 @@ def report(analysis_id):
         import certifi
 
         ca = certifi.where()
-        uri = os.environ.get("MONGO_URI") or "mongodb+srv://samarthburkul67_db_user:N4J8vQiYjHcGFsuT@cluster0.rld51zf.mongodb.net/forensicai?retryWrites=true&w=majority&appName=Cluster0"
+        uri = os.environ.get("MONGO_URI")
         client = MongoClient(uri, serverSelectionTimeoutMS=5000, tlsCAFile=ca)
         db = client["forensicai"]
         analyses = db["analyses"]

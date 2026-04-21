@@ -2,8 +2,12 @@ import certifi
 from pymongo import MongoClient
 import json
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 ca = certifi.where()
-uri = "mongodb+srv://samarthburkul67_db_user:N4J8vQiYjHcGFsuT@cluster0.rld51zf.mongodb.net/forensicai?retryWrites=true&w=majority&appName=Cluster0"
+uri = os.environ.get("MONGO_URI")
 client = MongoClient(uri, serverSelectionTimeoutMS=5000, tlsCAFile=ca)
 try:
     client.server_info()
