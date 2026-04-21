@@ -14,7 +14,7 @@ from reportlab.lib.colors import HexColor, black, white
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Image as RLImage,
-    Table, TableStyle, HRFlowable,
+    Table, TableStyle, HRFlowable, KeepTogether
 )
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
@@ -40,6 +40,7 @@ def _b64_to_image(b64_str, width=None, height=None):
         img.drawHeight = width * ratio
     if height:
         img.drawHeight = height
+    img.hAlign = 'CENTER'
     return img
 
 
@@ -78,7 +79,7 @@ def generate_report(analysis_data: dict) -> bytes:
     section_style = ParagraphStyle(
         "Section", parent=styles["Heading2"],
         fontSize=14, textColor=BRAND_DARK, spaceBefore=14, spaceAfter=8,
-        borderWidth=1, borderColor=BRAND_VIOLET, borderPadding=4,
+        alignment=TA_CENTER
     )
     body_style = ParagraphStyle(
         "Body", parent=styles["Normal"],
@@ -102,7 +103,7 @@ def generate_report(analysis_data: dict) -> bytes:
 
     # ── Filename ───────────────────────────────────────────────────────────
     fname = analysis_data.get("filename", "Unknown")
-    story.append(Paragraph(f"<b>File analysed:</b>  {fname}", body_style))
+    story.append(Paragraph(f"<b>File analysed:</b>  {fname}", ParagraphStyle("CenteredBody", parent=body_style, alignment=TA_CENTER)))
     story.append(Spacer(1, 8))
 
     # ── Original Image ─────────────────────────────────────────────────────
@@ -114,20 +115,21 @@ def generate_report(analysis_data: dict) -> bytes:
             story.append(Spacer(1, 10))
 
     # ── ELA Analysis Section ───────────────────────────────────────────────
-    story.append(Paragraph("ELA Analysis", section_style))
+    ela_elements = [Paragraph("ELA Analysis", section_style)]
     ela_b64 = analysis_data.get("ela_image_base64")
     if ela_b64:
         ela_img = _b64_to_image(ela_b64, width=10 * cm)
         if ela_img:
-            story.append(ela_img)
-            story.append(Spacer(1, 6))
+            ela_elements.append(ela_img)
+            ela_elements.append(Spacer(1, 6))
 
     ela_conf = analysis_data.get("ela_confidence", 0)
-    story.append(Paragraph(
+    ela_elements.append(Paragraph(
         f"ELA Tampered Probability: <b>{ela_conf * 100:.1f}%</b>",
-        body_style,
+        ParagraphStyle("CenteredBody", parent=body_style, alignment=TA_CENTER),
     ))
-    story.append(Spacer(1, 10))
+    ela_elements.append(Spacer(1, 10))
+    story.append(KeepTogether(ela_elements))
 
     # ── Score Breakdown Table ──────────────────────────────────────────────
     story.append(Paragraph("Score Breakdown", section_style))
@@ -142,6 +144,7 @@ def generate_report(analysis_data: dict) -> bytes:
         ["Edge (Gradient)",    "20%",  f"{edge_s * 100:.1f}%"],
     ]
     t = Table(table_data, colWidths=[7 * cm, 3 * cm, 3 * cm])
+    t.hAlign = 'CENTER'
     t.setStyle(TableStyle([
         ("BACKGROUND",   (0, 0), (-1, 0), BRAND_VIOLET),
         ("TEXTCOLOR",    (0, 0), (-1, 0), white),
@@ -184,6 +187,7 @@ def generate_report(analysis_data: dict) -> bytes:
         for k, v in list(exif.items())[:12]:
             exif_rows.append([str(k), str(v)[:60]])
         et = Table(exif_rows, colWidths=[5 * cm, 10 * cm])
+        et.hAlign = 'CENTER'
         et.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), BRAND_SLATE),
             ("TEXTCOLOR",  (0, 0), (-1, 0), white),
